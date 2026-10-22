@@ -399,6 +399,43 @@
             border-radius: 4px;
             background: rgba(0,0,0,0.4);
             border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 8px rgba(255,255,255,0.7);
+            transition: box-shadow 0.2s ease;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+        /* Screen flash for hits */
+        .screen-flash {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0);
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0;
+            transition: opacity 0.05s ease;
+        }
+        /* GTA wanted stars */
+        .wanted-stars {
+            display: flex;
+            gap: 3px;
+            margin-left: 10px;
+        }
+        .star {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.25);
+            transition: all 0.3s ease;
+            text-shadow: 0 0 4px rgba(255,255,255,0.2);
+        }
+        .star.active {
+            color: var(--gta-orange);
+            text-shadow: 0 0 8px rgba(255,102,0,0.6), 0 0 12px rgba(255,102,0,0.4);
+            filter: drop-shadow(0 0 4px rgba(255,102,0,0.5));
+            animation: starGlow 1.5s infinite alternate;
+        }
+        @keyframes starGlow {
+            0% { filter: drop-shadow(0 0 4px rgba(255,102,0,0.5)); }
+            100% { filter: drop-shadow(0 0 8px rgba(255,102,0,0.8)), drop-shadow(0 0 16px rgba(255,102,0,0.4)); }
         }
         .score-value.runs {
             color: var(--neon-pink);
@@ -411,24 +448,28 @@
             text-shadow: 0 0 12px rgba(255,68,68,0.7);
             border-color: var(--red);
             background: rgba(255,68,68,0.1);
+            font-variant-numeric: tabular-nums;
         }
         .score-value.strikes {
             color: var(--yellow);
             text-shadow: 0 0 12px rgba(255,221,0,0.7);
             border-color: var(--yellow);
             background: rgba(255,221,0,0.1);
+            font-variant-numeric: tabular-nums;
         }
         .score-value.inning {
             color: var(--neon-cyan);
             text-shadow: 0 0 12px rgba(0,255,255,0.6);
             border-color: var(--neon-cyan);
             background: rgba(0,255,255,0.1);
+            font-variant-numeric: tabular-nums;
         }
         .score-value.balls {
             color: var(--amber);
             text-shadow: 0 0 12px rgba(255,179,71,0.7);
             border-color: var(--amber);
             background: rgba(255,179,71,0.1);
+            font-variant-numeric: tabular-nums;
         }
         .team-indicator { display: flex; align-items: center; gap: 6px; }
         .team-flag { font-size: 1.3rem; filter: drop-shadow(0 0 6px rgba(255,0,255,0.5)); }
@@ -1241,9 +1282,10 @@
     <div class="vignette"></div>
     <!-- Scanlines for texture -->
     <div class="scanlines"></div>
-
-            <!-- Film grain for cinematic texture -->
+    <!-- Film grain for cinematic texture -->
     <div class="film-grain"></div>
+    <!-- Screen flash for hit feedback -->
+    <div class="screen-flash" id="screenFlash"></div>
 
     <div class="game-container br-frame">
         <div class="spotlight left"></div>
@@ -1262,6 +1304,13 @@
             <div class="score-item"><div class="score-label">Balls</div><div class="score-value balls" id="balls">0</div></div>
             <div class="score-item"><div class="score-label">Runs</div><div class="score-value runs" id="runs">0</div></div>
             <div class="score-item"><div class="score-label">Batter</div><div class="team-indicator"><span class="team-flag" id="batterFlag">🇺🇸</span><span id="batterName" class="batter-name">-</span></div></div>
+            <div class="wanted-stars" id="wantedStars">
+                <span class="star">☆</span>
+                <span class="star">☆</span>
+                <span class="star">☆</span>
+                <span class="star">☆</span>
+                <span class="star">☆</span>
+            </div>
         </div>
 
         <div class="game-panel">
@@ -1374,6 +1423,46 @@
         const statusRef = document.getElementById('gameStatus');
         const swingBtn = document.getElementById('swingBtn');
         const field = document.getElementById('field');
+        const flashRef = document.getElementById('screenFlash');
+        const containerRef = document.querySelector('.game-container');
+        const starsRef = document.getElementById('wantedStars').children;
+
+        /* Screen flash on hit */
+        function flashScreen(duration) {
+            if (!flashRef) return;
+            flashRef.style.background = 'rgba(255,255,255,0.5)';
+            flashRef.style.opacity = '1';
+            flashRef.style.transition = 'opacity ' + (duration || 100) + 'ms ease';
+            setTimeout(function() {
+                flashRef.style.opacity = '0';
+                flashRef.style.background = 'rgba(255,255,255,0)';
+                flashRef.style.transition = 'opacity 0.05s ease';
+            }, duration || 100);
+        }
+
+        /* Screen shake on impact */
+        function shakeScreen(intensity, duration) {
+            if (!containerRef) return;
+            var frames = duration / 50;
+            var count = 0;
+            var anim = setInterval(function() {
+                var x = (Math.random() - 0.5) * intensity * 2;
+                var y = (Math.random() - 0.5) * intensity;
+                containerRef.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+                count++;
+                if (count >= frames) {
+                    clearInterval(anim);
+                    containerRef.style.transform = '';
+                }
+            }, 50);
+        }
+
+        /* Update wanted stars based on runs */
+        function updateWantedStars(runs) {
+            for (var i = 0; i < starsRef.length; i++) {
+                starsRef[i].classList.toggle('active', i < runs);
+            }
+        }
 
         function renderTeams() {
             const grid = document.getElementById('teamsGrid');
@@ -1517,6 +1606,8 @@
 
         function homeRun() {
             playSound('homerun');
+            flashScreen(150);
+            shakeScreen(3, 400);
             statusRef.textContent = '🎉💥🏆  H O M E  R U N  🏆💥🎉';
             statusRef.className = 'game-status status-hit';
             ballRef.classList.add('hit');
@@ -1544,6 +1635,8 @@
 
         function baseHit() {
             playSound('hit');
+            flashScreen(100);
+            shakeScreen(2, 250);
             var dirs = ['left field', 'right field', 'center field'];
             var dir = dirs[Math.floor(Math.random() * dirs.length)];
             statusRef.textContent = '⚡ HIT to ' + dir + '!';
@@ -1575,6 +1668,7 @@
 
         function miss() {
             playSound('strike');
+            flashScreen(80, 50);
             gameState.strikes++;
             updateScoreboard();
             statusRef.textContent = '⚔️ STRIKE ' + gameState.strikes + '!';
@@ -1700,6 +1794,7 @@
             document.getElementById('strikes').textContent = gameState.strikes;
             document.getElementById('balls').textContent = gameState.balls;
             document.getElementById('runs').textContent = gameState.runs;
+            updateWantedStars(gameState.runs);
         }
 
         function updateBaseDisplay() {
