@@ -1,0 +1,689 @@
+
+        :root {
+            --field-green: #228B22;
+            --field-dark: #1a6b1a;
+            --dirt: #c49866;
+            --dirt-dark: #8b6b35;
+            --white: #ffffff;
+            --black: #0a0a1a;
+            --accent: #00d4ff;
+            --accent-gold: #ffd700;
+            --accent-silver: #c0c0c0;
+            --red: #ff4444;
+            --yellow: #ffdd00;
+            --green: #4ade80;
+            --text-primary: #f0f0f0;
+            --text-secondary: #aaaaaa;
+            --shadow: 0 8px 25px rgba(0,0,0,0.5);
+            --panel-bg: rgba(10, 15, 25, 0.85);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top, #1a1a2e 0%, #0a0a1a 50%, #050508 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+        .game-container { max-width: 1050px; width: 100%; margin: 0 auto; }
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 10px rgba(0,212,255,0.4), 0 0 20px rgba(255,215,0,0.2); }
+            100% { text-shadow: 0 0 20px rgba(0,212,255,0.6), 0 0 30px rgba(255,215,0,0.4), 0 0 40px rgba(0,212,255,0.3); }
+        }
+        @keyframes pulseSubtle { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
+        header { text-align: center; padding: 20px 0; margin-bottom: 20px; }
+        h1 { font-size: 2.8rem; color: var(--accent); text-shadow: 0 0 20px rgba(0,212,255,0.5); letter-spacing: 3px; animation: pulseGlow 2s infinite alternate; }
+        .subtitle { font-size: 1.1rem; color: var(--accent-gold); margin-top: 8px; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .tagline { font-size: 0.85rem; color: var(--text-secondary); margin-top: 5px; }
+        .scoreboard {
+            display: flex; justify-content: space-around;
+            background: var(--panel-bg);
+            border: 2px solid var(--accent);
+            border-radius: 15px; padding: 12px 25px;
+            margin-bottom: 15px; box-shadow: var(--shadow);
+            position: relative; overflow: hidden;
+        }
+        .scoreboard::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.03) 50%, transparent 100%); }
+        .score-item { text-align: center; z-index: 2; }
+        .score-label { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .score-value { font-size: 1.8rem; font-weight: bold; margin-top: 5px; }
+        .score-value.runs { color: var(--accent-gold); text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        .score-value.outs { color: var(--red); }
+        .score-value.strikes { color: var(--yellow); }
+        .score-value.inning { color: var(--accent); }
+        .game-panel {
+            background: linear-gradient(135deg, #1a2a3a 0%, #162140 50%, #0f3460 100%);
+            border: 3px solid var(--accent-gold);
+            border-radius: 20px; padding: 20px;
+            box-shadow: var(--shadow); margin-bottom: 20px;
+            position: relative; overflow: hidden;
+        }
+        .game-panel::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-gold), var(--accent-silver), var(--yellow), var(--accent));
+        }
+        .game-status {
+            text-align: center; padding: 14px; font-size: 1.2rem; font-weight: bold;
+            border-radius: 12px; margin: 15px 0; min-height: 32px;
+            transition: all 0.3s ease; position: relative; z-index: 5;
+        }
+        .status-waiting { color: var(--accent); background: rgba(0,212,255,0.12); border: 2px solid var(--accent); }
+        .status-swing { color: var(--accent-gold); background: rgba(255,215,0,0.12); border: 2px solid var(--accent-gold); }
+        .status-hit { color: var(--green); background: rgba(74,222,128,0.12); border: 2px solid var(--green); }
+        .status-miss { color: var(--red); background: rgba(255,68,68,0.12); border: 2px solid var(--red); }
+        .status-out { color: var(--red); background: rgba(255,68,68,0.15); border: 2px solid var(--red); }
+        .status-run { color: var(--accent-gold); background: rgba(255,215,0,0.12); border: 2px solid var(--accent-gold); }
+        .baseball-field {
+            width: 100%; height: 340px;
+            background: linear-gradient(135deg, var(--field-green) 0%, var(--field-dark) 100%);
+            border: 3px solid var(--dirt);
+            border-radius: 10px; position: relative; margin: 15px 0;
+            overflow: hidden; box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+        }
+        .field-lines {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px; height: 260px;
+            border: 1px dashed rgba(255,255,255,0.3);
+            border-radius: 50%;
+        }
+        .field-lines::before, .field-lines::after {
+            content: ""; position: absolute;
+            background: rgba(255,255,255,0.2);
+        }
+        .field-lines::before { top: 0; left: 50%; width: 2px; height: 100%; transform: translateX(-50()); }
+        .field-lines::after { top: 50%; left: 0; width: 100%; height: 2px; transform: translateY(-50%); }
+        .bases {
+            position: absolute; top: 50%; left: 75%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            width: 180px; height: 180px;
+        }
+        .base {
+            position: absolute; width: 36px; height: 36px;
+            border-radius: 6px; background: var(--white);
+            border: 3px solid var(--dirt-dark);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: all 0.4s ease; z-index: 3;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: var(--black); font-size: 0.9rem;
+        }
+        .base.base-home { top: 50%; left: 50%; transform: translate(-50%, -50()); }
+        .base.base-1 { top: 50%; left: 0; transform: translate(-50%, -50()); }
+        .base.base-2 { top: 0; left: 50%; transform: translate(-50%, -50()); }
+        .base.base-3 { top: 50%; left: 100%; transform: translate(50%, -50()); }
+        .base.active {
+            background: var(--accent-gold);
+            box-shadow: 0 0 20px var(--accent-gold);
+            animation: basePulse 1.5s infinite;
+        }
+        @keyframes basePulse { 0%, 100% { transform: scale(1.2); } 50% { transform: scale(1.4); } }
+        .base-label { font-size: 0.7rem; }
+        .runner {
+            position: absolute; width: 26px; height: 32px;
+            z-index: 4; transition: all 0.6s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .runner.helmet { background: linear-gradient(135deg, var(--accent), #0099cc); }
+        .runner.helmet::before {
+            content: ""; position: absolute;
+            width: 20px; height: 12px;
+            background: linear-gradient(135deg, var(--accent), #0099cc);
+            border-radius: 12px 12px 0 0; top: 0; left: 3px;
+        }
+        .pitcher-mound-el {
+            position: absolute; width: 56px; height: 56px;
+            border-radius: 50%; background: radial-gradient(circle, var(--dirt), var(--dirt-dark));
+            border: 2px dashed #65432188;
+            top: calc(50% - 70px); left: 60px; z-index: 2;
+        }
+        .home-plate-el {
+            position: absolute; width: 32px; height: 32px;
+            background: var(--white);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            top: 50%; left: 50%; transform: translate(-50%, -50());
+            z-index: 2; border: 2px solid var(--black);
+        }
+        .pitcher-graphic { position: absolute; top: calc(50% - 55px); left: 55px; z-index: 3; }
+        .batter-box { position: absolute; top: 50%; right: 5%; transform: translateY(-50%); z-index: 10; }
+        .player-sprite { position: relative; width: 44px; height: 62px; margin: 0 auto; }
+        .player-sprite .helmet {
+            position: absolute; width: 28px; height: 20px;
+            background: linear-gradient(135deg, var(--accent), #0099cc);
+            top: 0; left: 8px; border-radius: 16px 16px 2px 2px;
+            box-shadow: 0 0 12px rgba(0,212,255,0.5);
+        }
+        .player-sprite .body {
+            position: absolute; width: 26px; height: 38px;
+            background: linear-gradient(to bottom, var(--accent), #0099cc);
+            top: 8px; left: 9px; border-radius: 10px 10px 4px 4px;
+        }
+        .player-sprite .bat {
+            position: absolute; width: 60px; height: 7px;
+            background: linear-gradient(90deg, #8B4513, #654321);
+            top: 22px; left: -50px; border-radius: 4px;
+            transform-origin: 50px 24px; transition: transform 0.08s ease; z-index: 0;
+        }
+        .player-sprite .bat.swinging { transform: rotate(-50deg) !important; }
+        .player-sprite .bat.follow-through { transform: rotate(-80deg) !important; }
+        .ball {
+            position: absolute; width: 12px; height: 12px;
+            background: radial-gradient(circle, var(--white), #e0e0e0);
+            border: 2px solid var(--black); border-radius: 50%;
+            z-index: 6; box-shadow: 0 0 8px rgba(255,255,255,0.7);
+        }
+        .ball.hit { animation: ballTrail 0.5s forwards; }
+        @keyframes ballTrail { 0% { transform: scale(1); } 100% { transform: scale(2.5); box-shadow: 0 0 30px gold; } }
+        .particle {
+            position: absolute; width: 4px; height: 4px;
+            background: var(--accent-gold); border-radius: 50%;
+            pointer-events: none; z-index: 5;
+        }
+        @keyframes particleFly { 0% { opacity: 1; } 100% { opacity: 0; } }
+        .controls { display: flex; justify-content: center; gap: 15px; margin: 15px 0; flex-wrap: wrap; }
+        .control-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .control-label { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent-gold));
+            color: var(--black); border: 2px solid var(--accent-gold);
+            padding: 14px 26px; font-size: 1.1rem; font-weight: bold;
+            border-radius: 14px; cursor: pointer;
+            transition: all 0.2s ease; box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .btn:hover { transform: scale(1.08); box-shadow: 0 0 25px var(--accent-gold); }
+        .btn:active { transform: scale(0.95); }
+        .btn.swing { background: linear-gradient(135deg, var(--green), #22c55e); }
+        .btn.run { background: linear-gradient(135deg, var(--accent-gold), #eab349); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn .btn-icon { font-size: 1.3rem; }
+        .instructions {
+            background: var(--panel-bg); border: 1px solid var(--accent);
+            border-radius: 12px; padding: 15px; margin-top: 15px; font-size: 0.85rem;
+        }
+        .instructions ul { margin-left: 20px; line-height: 1.7; }
+        .instructions li { margin-bottom: 4px; }
+        .instructions strong { color: var(--accent); }
+        .team-btn {
+            background: linear-gradient(135deg, #2a2a4a, #3a3a5a);
+            border: 2px solid var(--accent); padding: 16px 20px;
+            font-size: 1.1rem; font-weight: bold; border-radius: 12px;
+            cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; margin: 4px;
+        }
+        .team-btn:hover { transform: translateY(-5px); box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+        .teams-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; } .baseball-field { height: 260px; }
+            .controls { flex-direction: column; align-items: center; }
+            .teams-grid { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; } .baseball-field { height: 200px; }
+            .teams-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>⚾ World Baseball Star</h1>
+            <div class="subtitle">🏆 Ultimate Batting & Base Running Championship 🏆</div>
+            <div class="tagline">6 Global Teams • 5 Players Each • World Famous Stadiums</div>
+        </header>
+
+        <div class="scoreboard">
+            <div class="score-item"><div class="score-label">Inning</div><div class="score-value inning" id="inning">1</div></div>
+            <div class="score-item"><div class="score-label">Outs</div><div class="score-value outs" id="outs">0</div></div>
+            <div class="score-item"><div class="score-label">Strikes</div><div class="score-value strikes" id="strikes">0</div></div>
+            <div class="score-item"><div class="score-label">Balls</div><div class="score-value" id="balls" style="color:#ffd166;">0</div></div>
+            <div class="score-item"><div class="score-label">Runs</div><div class="score-value runs" id="runs">0</div></div>
+            <div class="score-item"><div class="score-label">Batter</div><div class="team-indicator"><span class="team-flag" id="batterFlag">🇺🇸</span><span id="batterName" style="color:var(--accent);font-weight:bold;">-</span></div></div>
+        </div>
+
+        <div class="game-panel">
+            <div class="game-status status-waiting" id="gameStatus">⚾ World Baseball Star! Select your team below...</div>
+
+            <div class="baseball-field" id="field">
+                <div class="field-lines"></div>
+                <div class="bases" id="basesContainer">
+                    <div class="base base-home active" id="baseHome"><span class="base-label">HOME</span></div>
+                    <div class="base base-1" id="base1"><span class="base-label">1B</span></div>
+                    <div class="base base-2" id="base2"><span class="base-label">2B</span></div>
+                    <div class="base base-3" id="base3"><span class="base-label">3B</span></div>
+                </div>
+                <div class="pitcher-mound-el"></div>
+                <div class="home-plate-el"></div>
+                <div class="pitcher-graphic"></div>
+                <div class="batter-box" id="batterBox">
+                    <div class="player-sprite" id="playerSprite">
+                        <div class="helmet" id="playerHelmet"></div>
+                        <div class="body" id="playerBody"></div>
+                        <div class="bat" id="bat"></div>
+                    </div>
+                </div>
+                <div class="ball" id="ball" style="display:none;"></div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">Swing Bat</div>
+                    <button class="btn swing" id="swingBtn" onclick="swingBat()"><span class="btn-icon">⚡</span> SWING UP</button>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Base Running</div>
+                    <button class="btn run" id="runLeftBtn" onclick="runToBase(-1)"><span class="btn-icon">⬅️</span> RUN LEFT</button>
+                    <button class="btn run" id="runRightBtn" onclick="runToBase(1)"><span class="btn-icon">➡️</span> RUN RIGHT</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="teamSelection">
+            <h3 style="color:var(--accent); text-align:center; margin-bottom:12px;">🌎 Choose Your Team:</h3>
+            <div class="teams-grid" id="teamsGrid"></div>
+        </div>
+
+        <div class="instructions">
+            <ul>
+                <li><strong>SWING UP:</strong> Press when ball flashes white — perfect timing = HOME RUN!</li>
+                <li><strong>RUN LEFT/RIGHT:</strong> After hitting, advance runners around the bases</li>
+                <li><strong>KEYBOARD:</strong> ArrowUp = swing, ArrowLeft/Right = run</li>
+                <li><strong>3 OUTS</strong> = Inning over. Track runs on the golden scoreboard!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    const teams = [
+        { name: "Yankees", city: "New York, NY", flag: "🇺🇸", color: "#002B55", players: ["Aaron Judge", "Giancarlo Stanton", "Juan Soto", "Anthony Rizzo", "Gleyber Torres"] },
+        { name: "Phillies", city: "Philadelphia, PA", flag: "🇺🇸", color: "#E81828", players: ["Bryce Harper", "Kyle Schwarber", "Aaron Nola", "J.T. Realmuto", "Alec Bohm"] },
+        { name: "Tigres del Licey", city: "Santo Domingo, DR", flag: "🇩🇴", color: "#CE1126", players: ["Juan Soto", "Rafael Devers", "Wander Franco", "Julio Rodriguez", "Corbin Carroll"] },
+        { name: "Leones del Caracas", city: "Caracas, Venezuela", flag: "🇻🇪", color: "#003366", players: ["Miguel Cabrera", "Jose Altuve", "Fernando Tatis Jr", "Ronald Acuna Jr", "Julio Rodriguez"] },
+        { name: "Yomiuri Giants", city: "Tokyo, Japan", flag: "🇯🇵", color: "#FC4445", players: ["Shohei Ohtani", "Yoshinobu Yamamoto", "Kodai Senga", "Seiya Suzuki", "Ginji Adachi"] },
+        { name: "Kia Tigers", city: "Gwangju, South Korea", flag: "🇰🇷", color: "#C50B1F", players: ["Kang Ba-da", "Kim Hyun-jun", "Choi Jun-seo", "Park Sung-ho", "Lee Yong-gyun"] }
+    ];
+
+    const gameState = {
+        inning: 1, outs: 0, strikes: 0, balls: 0, runs: 0,
+        teamIndex: -1, batterIndex: 0,
+        isPitching: false, isBallInPlay: false,
+        runners: [false, false, false],
+        gameActive: true
+    };
+
+    const ballRef = document.getElementById('ball');
+    const batRef = document.getElementById('bat');
+    const statusRef = document.getElementById('gameStatus');
+    const swingBtn = document.getElementById('swingBtn');
+    const field = document.getElementById('field');
+
+    function renderTeams() {
+        const grid = document.getElementById('teamsGrid');
+        grid.innerHTML = teams.map(function(team, i) {
+            return '<button class="team-btn" onclick="selectTeam(' + i + ')">' +
+            '<span class="team-flag">' + team.flag + '</span>' +
+            '<span class="team-name" style="color:' + team.color + '">' + team.name + '</span>' +
+            '<span class="team-city">' + team.city + '</span>' +
+            '</button>';
+        }).join('');
+    }
+
+    function selectTeam(teamIndex) {
+        gameState.teamIndex = teamIndex;
+        var team = teams[teamIndex];
+        document.getElementById('teamSelection').style.display = 'none';
+        document.getElementById('batterFlag').textContent = team.flag;
+        gameState.batterIndex = 0;
+        updateBatterDisplay();
+        document.getElementById('batterBox').style.display = 'block';
+        statusRef.textContent = team.flag + ' ' + team.name + ' up at bat!';
+        statusRef.className = 'game-status status-waiting';
+        setTimeout(function() {
+            statusRef.textContent = 'Facing the pitcher... watch for the flash!';
+            setTimeout(startGame, 1500);
+        }, 2000);
+    }
+
+    function updateBatterDisplay() {
+        var team = teams[gameState.teamIndex];
+        var player = team.players[gameState.batterIndex % team.players.length];
+        document.getElementById('batterName').textContent = player;
+    }
+
+    function startGame() {
+        statusRef.textContent = '⚡ Here comes the pitch!';
+        setTimeout(pitchBall, 800);
+    }
+
+    function pitchBall() {
+        if (!gameState.gameActive || gameState.outs >= 3) return;
+        gameState.isPitching = true;
+        gameState.isBallInPlay = false;
+        swingBtn.disabled = false;
+        ballRef.style.display = 'block';
+        ballRef.style.transition = 'none';
+        ballRef.classList.remove('hit');
+        ballRef.style.left = '80px';
+        ballRef.style.top = '170px';
+
+        var pitcherX = 80, homeX = 520, startY = 170;
+        var start = null;
+        var duration = 1200;
+
+        function animate(time) {
+            if (!start) start = time;
+            var elapsed = time - start;
+            var progress = Math.min(elapsed / duration, 1);
+            var x = pitcherX + (homeX - pitcherX) * progress;
+            var y = startY + Math.sin(progress * Math.PI) * 15;
+            ballRef.style.left = x + 'px';
+            ballRef.style.top = y + 'px';
+            if (progress > 0.62 && progress < 0.78) {
+                ballRef.style.boxShadow = '0 0 25px white, 0 0 35px white';
+                ballRef.style.transform = 'scale(1.6)';
+            } else {
+                ballRef.style.boxShadow = '0 0 8px rgba(255,255,255,0.7)';
+                ballRef.style.transform = 'scale(1)';
+            }
+            if (progress < 1 && gameState.isPitching) {
+                requestAnimationFrame(animate);
+            } else if (progress >= 1 && gameState.isPitching) {
+                if (!gameState.isBallInPlay) calledStrike();
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function swingBat() {
+        if (!gameState.isPitching || gameState.isBallInPlay) return;
+        var ballRect = ballRef.getBoundingClientRect();
+        var fieldRect = field.getBoundingClientRect();
+        var ballX = ballRect.left - fieldRect.left + ballRect.width / 2;
+        var plateX = 520;
+        var distFromPlate = Math.abs(ballX - plateX);
+
+        batRef.classList.add('swinging');
+        setTimeout(function() { batRef.classList.add('follow-through'); }, 100);
+        setTimeout(function() { batRef.classList.remove('swinging', 'follow-through'); }, 400);
+
+        gameState.isBallInPlay = true;
+        gameState.isPitching = false;
+        swingBtn.disabled = true;
+
+        if (distFromPlate < 50) {
+            homeRun();
+        } else if (distFromPlate < 140) {
+            baseHit();
+        } else {
+            miss();
+        }
+    }
+
+    function homeRun() {
+        playSound('homerun');
+        statusRef.textContent = '🎉💥🏆  H O M E  R U N  🏆💥🎉';
+        statusRef.className = 'game-status status-hit';
+        ballRef.classList.add('hit');
+
+        for (var i = 0; i < 15; i++) {
+            createParticle(400, 170, i);
+        }
+
+        var frame = 0;
+        var anim = setInterval(function() {
+            frame++;
+            ballRef.style.top = (170 - frame * 5) + 'px';
+            ballRef.style.left = (400 + frame * 8) + 'px';
+            if (frame > 35) {
+                clearInterval(anim);
+                ballRef.style.display = 'none';
+                gameState.runs += 1;
+                gameState.isBallInPlay = false;
+                advanceRunners(4);
+                updateScoreboard();
+                setTimeout(nextAtBat, 2000);
+            }
+        }, 20);
+    }
+
+    function baseHit() {
+        playSound('hit');
+        var dirs = ['left field', 'right field', 'center field'];
+        var dir = dirs[Math.floor(Math.random() * dirs.length)];
+        statusRef.textContent = '⚡ HIT to ' + dir + '!';
+        statusRef.className = 'game-status status-hit';
+        ballRef.classList.add('hit');
+
+        for (var i = 0; i < 8; i++) {
+            createParticle(400, 170, i);
+        }
+
+        swingBtn.disabled = true;
+        var frame = 0;
+        var anim = setInterval(function() {
+            frame++;
+            ballRef.style.left = (400 + frame * 10) + 'px';
+            if (frame > 25) {
+                clearInterval(anim);
+                ballRef.style.display = 'none';
+                gameState.isBallInPlay = true;
+                gameState.isPitching = false;
+                advanceRunners(1);
+                statusRef.textContent = '🏃 Press RUN LEFT/RIGHT to advance!';
+                statusRef.className = 'game-status status-run';
+                document.getElementById('runLeftBtn').disabled = false;
+                document.getElementById('runRightBtn').disabled = false;
+            }
+        }, 20);
+    }
+
+    function miss() {
+        playSound('strike');
+        gameState.strikes++;
+        updateScoreboard();
+        statusRef.textContent = '⚔️ STRIKE ' + gameState.strikes + '!';
+        statusRef.className = 'game-status status-miss';
+        swingBtn.disabled = true;
+        setTimeout(function() {
+            ballRef.style.display = 'none';
+            if (gameState.strikes >= 3) {
+                out('Strikeout');
+            } else {
+                setTimeout(pitchBall, 800);
+            }
+        }, 600);
+    }
+
+    function calledStrike() {
+        gameState.strikes++;
+        if (gameState.strikes >= 3) {
+            out('Called strike 3');
+        } else {
+            statusRef.textContent = '⚔️ BALL — STRIKE ' + gameState.strikes + '!';
+            statusRef.className = 'game-status status-miss';
+            swingBtn.disabled = true;
+            setTimeout(function() { ballRef.style.display = 'none'; }, 300);
+            setTimeout(pitchBall, 800);
+        }
+    }
+
+    function out(reason) {
+        playSound('out');
+        gameState.outs++;
+        gameState.strikes = 0;
+        if (gameState.outs >= 3) {
+            endInning();
+        } else {
+            statusRef.textContent = 'OUT! (' + reason + ') — ' + gameState.outs + ' outs';
+            statusRef.className = 'game-status status-out';
+            swingBtn.disabled = true;
+            setTimeout(function() { ballRef.style.display = 'none'; }, 500);
+            setTimeout(nextAtBat, 1500);
+        }
+    }
+
+    function runToBase(direction) {
+        if (!gameState.isBallInPlay || gameState.outs >= 3 || gameState.isPitching) return;
+        playSound('run');
+        statusRef.textContent = '🏃‍♂️ Runner advancing!';
+        statusRef.className = 'game-status status-run';
+
+        var runner = document.createElement('div');
+        runner.className = 'runner helmet';
+        runner.style.left = '400px';
+        runner.style.top = '170px';
+        field.appendChild(runner);
+
+        var targetBase = direction > 0 ? 550 : 250;
+        var frame = 0;
+        var runnerAnim = setInterval(function() {
+            frame++;
+            var progress = Math.min(frame / 30, 1);
+            runner.style.left = (400 + (targetBase - 400) * progress) + 'px';
+            if (progress >= 1) {
+                clearInterval(runnerAnim);
+                setTimeout(function() { runner.remove(); }, 200);
+                advanceRunners(1);
+            }
+        }, 20);
+
+        document.getElementById('runLeftBtn').disabled = true;
+        document.getElementById('runRightBtn').disabled = true;
+        setTimeout(function() {
+            statusRef.textContent = '⚡ Next pitch coming!';
+            statusRef.className = 'game-status status-waiting';
+            gameState.isBallInPlay = false;
+            setTimeout(pitchBall, 800);
+        }, 1000);
+    }
+
+    function advanceRunners(bases) {
+        for (var i = 0; i < bases; i++) {
+            if (gameState.runners[2]) gameState.runs++;
+            gameState.runners = [true].concat(gameState.runners.slice(0, 2));
+        }
+        updateScoreboard();
+        updateBaseDisplay();
+    }
+
+    function nextAtBat() {
+        gameState.strikes = 0;
+        gameState.balls = 0;
+        gameState.batterIndex++;
+        updateBatterDisplay();
+        updateBaseDisplay();
+        setTimeout(updateScoreboard, 10);
+        if (gameState.outs >= 3) {
+            endInning();
+        } else {
+            statusRef.textContent = 'Next batter up!';
+            statusRef.className = 'game-status status-waiting';
+            setTimeout(startGame, 800);
+        }
+    }
+
+    function endInning() {
+        statusRef.textContent = '🔚 Inning ' + gameState.inning + ' over! Runs: ' + gameState.runs;
+        statusRef.className = 'game-status status-out';
+        swingBtn.disabled = true;
+        document.getElementById('runLeftBtn').disabled = true;
+        document.getElementById('runRightBtn').disabled = true;
+        gameState.balls = 0; gameState.strikes = 0; gameState.outs = 0;
+        gameState.runners = [false, false, false];
+        setTimeout(function() {
+            gameState.inning++;
+            statusRef.textContent = '⚾️ Top of Inning ' + gameState.inning + '!';
+            statusRef.className = 'game-status status-waiting';
+            setTimeout(startGame, 2000);
+        }, 2500);
+    }
+
+    function updateScoreboard() {
+        document.getElementById('inning').textContent = gameState.inning;
+        document.getElementById('outs').textContent = gameState.outs;
+        document.getElementById('strikes').textContent = gameState.strikes;
+        document.getElementById('balls').textContent = gameState.balls;
+        document.getElementById('runs').textContent = gameState.runs;
+    }
+
+    function updateBaseDisplay() {
+        document.getElementById('base1').classList.toggle('active', gameState.runners[0]);
+        document.getElementById('base2').classList.toggle('active', gameState.runners[1]);
+        document.getElementById('base3').classList.toggle('active', gameState.runners[2]);
+    }
+
+    function createParticle(x, y, index) {
+        var p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        var angle = (index / 8) * Math.PI * 2;
+        var distance = 25 + Math.random() * 20;
+        var frame = 0;
+        var anim = setInterval(function() {
+            frame++;
+            var progress = frame / 20;
+            p.style.left = (x + Math.cos(angle) * distance * progress) + 'px';
+            p.style.top = (y + Math.sin(angle) * distance * progress) + 'px';
+            p.style.opacity = (1 - progress).toString();
+            if (frame >= 20) { clearInterval(anim); p.remove(); }
+        }, 16);
+        field.appendChild(p);
+        setTimeout(function() { if (anim) { clearInterval(anim); } }, 400);
+    }
+
+    function playSound(type) {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var o = ctx.createOscillator();
+            var g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            var cfg = {
+                homerun: [440, 880, 0.3, 'sine', 300],
+                hit: [440, 0, 0.2, 'square', 100],
+                strike: [220, 0, 0.3, 'sawtooth', 200],
+                foul: [300, 0, 0.2, 'triangle', 200],
+                out: [150, 0, 0.3, 'triangle', 500],
+                run: [523, 0, 0.15, 'square', 80]
+            };
+            var s = cfg[type] || cfg.hit;
+            if (s[1] > 0) {
+                o.frequency.setValueAtTime(s[0], ctx.currentTime);
+                o.frequency.exponentialRampToValueAtTime(s[1], ctx.currentTime + s[4]/1000);
+            } else {
+                o.frequency.value = s[0];
+            }
+            o.type = s[3];
+            g.gain.value = s[2];
+            o.start();
+            o.stop(ctx.currentTime + s[4] / 1000);
+        } catch(e) {}
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (!gameState.gameActive) return;
+        if (e.key === 'ArrowUp' || e.key === ' ') {
+            e.preventDefault();
+            swingBat();
+        }
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            runToBase(-1);
+        }
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            runToBase(1);
+        }
+    });
+
+    // Initialize
+    renderTeams();
+    document.getElementById('batterBox').style.display = 'block';
+    updateScoreboard();
+    statusRef.textContent = '⚾ Ready! Choose a team, then SWING!';
+    </script>
+</body>
+</html>
