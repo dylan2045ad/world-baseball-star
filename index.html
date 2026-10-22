@@ -18,10 +18,8 @@
             --neon-cyan: #00ffff;
             --neon-pink: #ff00ff;
             --neon-magenta: #ff00aa;
-            --neon-hotpink: #ff69b4;
             --neon-acid: #7fff00;
             --neon-lime: #39ff14;
-            --neon-purple: #b400ff;
             --gta-orange: #ff6600;
             --gta-teal: #00e6d6;
 
@@ -38,8 +36,9 @@
             --accent-gold: #ffd700;
             --accent-silver: #c0c0c0;
             --red: #ff4444;
-            --yellow: #ffdd00;
+            --yellow: #ffd130;
             --green: #4ade80;
+            --amber: #ffb347;
 
             --text-primary: #e0f0ff;
             --text-secondary: #aaaaaa;
@@ -66,7 +65,7 @@
             background: radial-gradient(circle at top, #0a001a 0%, #000010 50%, #000000 100%);
         }
 
-        /* ===== DIGITAL RAIN BACKDROP ===== */
+        /* ===== CYBER-GTA BACKDROP LAYERS ===== */
         .digital-rain {
             position: fixed;
             top: 0; left: 0;
@@ -80,13 +79,13 @@
             top: -100%;
             width: 2px;
             height: 100%;
-            background: linear-gradient(transparent 50%, rgba(0,255,255,0.15), transparent);
-            opacity: 0.35;
+            background: linear-gradient(transparent 50%, rgba(0,255,255,0.1), transparent);
+            opacity: 0.25;
             animation: rainFall 6s infinite linear;
         }
         @keyframes rainFall {
             0% { transform: translateY(0); opacity: 0; }
-            10% { opacity: 0.4; }
+            10% { opacity: 0.3; }
             100% { transform: translateY(100vh); opacity: 0; }
         }
         .neon-grid {
@@ -96,14 +95,65 @@
             pointer-events: none;
             z-index: 0;
             background-image:
-                linear-gradient(rgba(255,0,255,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px);
-            background-size: 32px 32px;
-            animation: gridPulse 8s ease-in-out infinite;
+                linear-gradient(rgba(255,0,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,255,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridPulse 10s ease-in-out infinite;
         }
         @keyframes gridPulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.6; }
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.45; }
+        }
+        /* Vignette to focus attention on game area */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 40%,
+                rgba(0,0,0,0.5) 75%,
+                rgba(0,0,0,0.75) 100%
+            );
+        }
+        /* Subtle scanlines for cyberpunk texture */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 3px,
+                rgba(0,255,255,0.015) 3px,
+                rgba(0,255,255,0.015) 4px
+            );
+            animation: scanMove 8s linear infinite;
+        }
+        @keyframes scanMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 8px; }
+        }
+        /* Film grain for cinematic texture */
+        .film-grain {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='65' numOctaves='3' stitchTiles='stitch'%3E%3C/feTurbulence%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'%3E%3C/rect%3E%3C/svg%3E");
+            background-size: 150px 150px;
+            animation: grainMove 0.3s step-end infinite;
+        }
+        @keyframes grainMove {
+            0% { opacity: 0.25; }
+            50% { opacity: 0.35; }
+            100% { opacity: 0.25; }
         }
         .city-skyline {
             position: fixed;
@@ -143,6 +193,50 @@
             margin: 0 auto;
             position: relative;
             z-index: 2;
+            padding: 16px;
+            box-shadow:
+                0 20px 50px rgba(0,0,0,0.8),
+                0 0 0 4px rgba(192,192,192,0.25),
+                0 0 60px rgba(139,0,255,0.12);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px;
+        }
+        .game-container::before {
+            content: "";
+            position: absolute;
+            top: -6px; left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg,
+                rgba(0,255,255,0.4),
+                rgba(255,0,255,0.5),
+                rgba(0,255,255,0.4));
+            box-shadow: 0 0 12px rgba(0,255,255,0.5), 0 0 20px rgba(255,0,255,0.3);
+            z-index: 1;
+            pointer-events: none;
+            border-radius: 4px 4px 0 0;
+        }
+        .game-container::after {
+            content: "";
+            position: absolute;
+            top: -4px; left: -4px;
+            width: 22px; height: 22px;
+            border-top: 3px solid rgba(192,192,192,0.5);
+            border-left: 3px solid rgba(192,192,192,0.5);
+            z-index: 1;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(192,192,192,0.3);
+        }
+        .game-container.br-frame::after {
+            content: "";
+            top: auto; bottom: -4px;
+            left: auto; right: -4px;
+            width: 22px; height: 22px;
+            border-top: none;
+            border-left: none;
+            border-bottom: 3px solid rgba(192,192,192,0.5);
+            border-right: 3px solid rgba(192,192,192,0.5);
+            box-shadow: 0 0 8px rgba(192,192,192,0.3);
         }
         header {
             text-align: center;
@@ -154,12 +248,12 @@
             font-size: 3rem;
             color: var(--neon-cyan);
             text-shadow:
-                0 0 8px rgba(0,255,255,0.5),
-                0 0 16px rgba(255,0,255,0.35),
-                0 0 28px rgba(0,255,255,0.25),
-                3px 3px 0 rgba(255,0,255,0.3);
-            letter-spacing: 4px;
-            animation: pulseGlow 2s infinite alternate;
+                0 0 6px rgba(0,255,255,0.4),
+                0 0 12px rgba(255,0,255,0.25),
+                0 0 22px rgba(0,255,255,0.2),
+                0 0 30px rgba(255,0,255,0.12);
+            letter-spacing: 3px;
+            animation: pulseGlow 2.5s infinite alternate;
             position: relative;
         }
         h1::before {
@@ -167,18 +261,26 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            color: rgba(255,0,255,0.1);
+            color: rgba(255,0,255,0.06);
             z-index: -1;
-            animation: glitchShift 4s infinite linear;
+            clip-path: inset(0 0 0 0);
+            animation: glitchSubtle 7s infinite linear;
         }
         h1::after {
             content: "⚾ WORLD BASEBALL STAR ⚾";
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            color: rgba(0,255,255,0.08);
+            color: rgba(0,255,255,0.05);
             z-index: -2;
-            animation: glitchShift 5s infinite linear reverse;
+            clip-path: inset(0 0 0 0);
+            animation: glitchSubtle 9s infinite linear reverse;
+        }
+        @keyframes glitchSubtle {
+            0%, 18%, 22%, 26%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            19% { clip-path: inset(24px 0 52px 0); transform: translate(-1px, 1px); }
+            23% { clip-path: inset(60px 0 30px 0); transform: translate(1px, -1px); }
+            25% { clip-path: inset(18px 0 72px 0); transform: translate(-1px, 1px); }
         }
         @keyframes pulseGlow {
             0% {
@@ -201,11 +303,6 @@
                     0 0 30px rgba(0,255,255,0.3),
                     0 0 36px rgba(255,0,255,0.2);
             }
-        }
-        @keyframes glitchShift {
-            0%, 20%, 100% { clip: rect(0, 999px, 0, 0); transform: translate(0); }
-            21%, 24% { clip: rect(42px, 999px, 78px, 0); transform: translate(-2px, -2px); }
-            26%, 28% { clip: rect(30px, 999px, 60px, 0); transform: translate(2px, 2px); }
         }
         .subtitle {
             font-size: 1.2rem;
@@ -243,7 +340,9 @@
             box-shadow:
                 0 10px 30px rgba(0,0,0,0.6),
                 inset 0 0 30px rgba(255,0,255,0.08),
-                0 0 25px rgba(255,0,255,0.3);
+                0 0 25px rgba(255,0,255,0.3),
+                0 0 0 4px rgba(192,192,192,0.25),
+                inset 0 2px 4px rgba(255,255,255,0.08);
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(4px);
@@ -276,6 +375,7 @@
                 var(--gta-orange),
                 var(--neon-cyan));
             z-index: 1;
+            box-shadow: 0 0 8px rgba(0,255,255,0.4), 0 0 12px rgba(255,0,255,0.25);
         }
         .score-item {
             text-align: center;
@@ -324,6 +424,12 @@
             border-color: var(--neon-cyan);
             background: rgba(0,255,255,0.1);
         }
+        .score-value.balls {
+            color: var(--amber);
+            text-shadow: 0 0 12px rgba(255,179,71,0.7);
+            border-color: var(--amber);
+            background: rgba(255,179,71,0.1);
+        }
         .team-indicator { display: flex; align-items: center; gap: 6px; }
         .team-flag { font-size: 1.3rem; filter: drop-shadow(0 0 6px rgba(255,0,255,0.5)); }
 
@@ -338,7 +444,9 @@
             padding: 22px;
             box-shadow:
                 0 14px 35px rgba(0,0,0,0.7),
-                inset 0 0 40px rgba(255,0,255,0.06);
+                inset 0 0 40px rgba(255,0,255,0.06),
+                0 0 0 6px rgba(192,192,192,0.25),
+                inset 0 2px 6px rgba(255,255,255,0.12);
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
@@ -358,6 +466,13 @@
                 var(--neon-pink),
                 var(--neon-cyan));
             z-index: 1;
+            box-shadow: 0 0 10px rgba(0,255,255,0.5), 0 0 20px rgba(255,0,255,0.3);
+            animation: neonFlicker 3s infinite;
+        }
+        @keyframes neonFlicker {
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            28%, 32% { opacity: 0.85; filter: brightness(0.7); }
+            60%, 65% { opacity: 0.95; filter: brightness(0.85); }
         }
         .game-panel::after {
             content: "";
@@ -367,6 +482,21 @@
             border: 1px solid rgba(255,255,255,0.05);
             z-index: 0;
             pointer-events: none;
+        }
+        /* CRT scanline overlay on game panel */
+        .game-panel .crt-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            pointer-events: none;
+            z-index: 1;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 4px,
+                rgba(0,0,0,0.08) 4px,
+                rgba(0,0,0,0.08) 5px
+            );
         }
         .game-status {
             text-align: center;
@@ -441,7 +571,122 @@
             overflow: hidden;
             box-shadow:
                 inset 0 0 50px rgba(0,0,0,0.7),
-                0 8px 25px rgba(0,0,0,0.5);
+                0 8px 25px rgba(0,0,0,0.5),
+                0 0 0 4px rgba(192,192,192,0.25);
+        }
+        /* Stadium crowd seating silhouette in outfield */
+        .field-crowd {
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(0,0,0,0.6) 0px,
+                rgba(0,0,0,0.6) 8px,
+                rgba(20,20,50,0.6) 8px,
+                rgba(20,20,50,0.6) 16px
+            );
+            z-index: 1;
+            pointer-events: none;
+        }
+        .field-crowd::before {
+            content: "";
+            position: absolute;
+            top: -8px;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: linear-gradient(
+                90deg,
+                rgba(0,255,255,0.1) 0%,
+                rgba(255,0,255,0.08) 50%,
+                rgba(0,255,255,0.1) 100%
+            );
+            z-index: 2;
+        }
+        /* Stadium spotlights */
+        .spotlight {
+            position: absolute;
+            width: 120px;
+            height: 4px;
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0.15),
+                rgba(255,255,255,0.3),
+                rgba(255,255,255,0.15));
+            z-index: 1;
+            pointer-events: none;
+            filter: blur(1px);
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
+            animation: spotlightSweep 6s ease-in-out infinite;
+        }
+        .spotlight.left {
+            top: 10px;
+            left: 10px;
+            transform: rotate(-35deg);
+            transform-origin: 0 0;
+        }
+        .spotlight.right {
+            top: 10px;
+            right: 10px;
+            transform: rotate(35deg);
+            transform-origin: 100% 0;
+        }
+        @keyframes spotlightSweep {
+            0%, 100% { opacity: 0.6; box-shadow: 0 0 8px rgba(255,255,255,0.4), 0 0 16px rgba(0,255,255,0.2); }
+            50% { opacity: 0.8; box-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 20px rgba(0,255,255,0.3), 0 0 30px rgba(255,0,255,0.15); }
+        }
+        /* CRT monitor tube glow */
+        .crt-tube {
+            position: absolute;
+            inset: -12px;
+            border-radius: 28px;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(0,255,255,0.04) 0%,
+                rgba(255,0,255,0.03) 50%,
+                transparent 70%
+            );
+            box-shadow:
+                inset 0 0 60px rgba(0,255,255,0.08),
+                0 0 40px rgba(139,0,255,0.15);
+            animation: tubePulse 5s ease-in-out infinite;
+        }
+        @keyframes tubePulse {
+            0%, 100% { opacity: 0.7; box-shadow: inset 0 0 60px rgba(0,255,255,0.08), 0 0 40px rgba(139,0,255,0.15); }
+            50% { opacity: 0.85; box-shadow: inset 0 0 70px rgba(0,255,255,0.12), 0 0 45px rgba(139,0,255,0.2); }
+        }
+        .scan-sweep {
+            position: absolute;
+            top: 0; left: -3px;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(transparent, rgba(0,255,255,0.4), transparent);
+            z-index: 3;
+            pointer-events: none;
+            opacity: 0;
+            animation: sweepMove 7s linear 3s infinite;
+        }
+        @keyframes sweepMove {
+            0% { left: -3px; opacity: 0; }
+            2% { opacity: 0.5; }
+            50% { left: calc(100% - 3px); opacity: 0.5; }
+            52% { opacity: 0; }
+            100% { left: 100%; opacity: 0; }
+        }
+        .field-texture {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background-image: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.05) 1px, transparent 2px),
+                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.03) 1px, transparent 2px);
+            background-size: 20px 20px;
+            opacity: 0.4;
         }
         .field-overlay {
             position: absolute;
@@ -602,16 +847,6 @@
             border-radius: 50%;
             box-shadow: 6px 0 0 0 rgba(255,255,255,0.7);
         }
-        .runner.body {
-            position: absolute;
-            bottom: 0; left: 50%;
-            transform: translateX(-50());
-            width: 22px;
-            height: 20px;
-            background: linear-gradient(to bottom, var(--neon-cyan), #0099cc);
-            border-radius: 2px;
-            box-shadow: 0 0 8px rgba(0,255,255,0.4);
-        }
 
         /* ===== PITCHER MOUND + HOME PLATE ===== */
         .pitcher-mound-el {
@@ -622,7 +857,7 @@
             background: radial-gradient(circle,
                 var(--dirt),
                 var(--dirt-dark),
-                #5d4020);
+                var(--metal-3));
             border: 2px dashed rgba(139, 107, 53, 0.6);
             top: calc(50% - 75px);
             left: 65px;
@@ -791,7 +1026,8 @@
             transition: all 0.15s ease;
             box-shadow:
                 0 6px 18px rgba(0,0,0,0.5),
-                0 0 15px rgba(255,0,255,0.35);
+                0 0 15px rgba(255,0,255,0.35),
+                inset 0 0 0 2px rgba(192,192,192,0.25);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -869,7 +1105,9 @@
             font-size: 0.88rem;
             box-shadow:
                 0 8px 25px rgba(0,0,0,0.6),
-                inset 0 0 30px rgba(0,255,255,0.05);
+                inset 0 0 30px rgba(0,255,255,0.05),
+                0 0 0 4px rgba(192,192,192,0.25),
+                inset 0 2px 4px rgba(255,255,255,0.08);
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(3px);
@@ -911,7 +1149,8 @@
             transition: all 0.2s ease;
             box-shadow:
                 0 8px 20px rgba(0,0,0,0.5),
-                0 0 12px rgba(255,0,255,0.25);
+                0 0 12px rgba(255,0,255,0.25),
+                inset 0 0 0 2px rgba(192,192,192,0.2);
             text-transform: uppercase;
             letter-spacing: 1px;
             position: relative;
@@ -931,10 +1170,10 @@
         .team-btn:hover {
             transform: translateY(-6px) scale(1.04);
             box-shadow:
-                0 0 25px rgba(255,0,255,0.45),
+                0 0 25px rgba(255,0,255,0.3),
                 0 10px 30px rgba(0,0,0,0.6),
-                0 0 20px rgba(0,255,255,0.3);
-            border-color: var(--neon-cyan);
+                0 0 20px var(--team-color);
+            border-color: var(--team-color);
         }
         .team-btn:active { transform: scale(0.97); }
         .team-flag {
@@ -954,6 +1193,11 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             z-index: 1;
+        }
+        .batter-name {
+            color: var(--neon-cyan);
+            font-weight: bold;
+            text-shadow: 0 0 6px rgba(0,255,255,0.5);
         }
 
         #teamSelection h3 {
@@ -993,8 +1237,18 @@
     <div class="neon-grid"></div>
     <!-- City skyline -->
     <div class="city-skyline" id="skylineContainer"></div>
+    <!-- Vignette for focus -->
+    <div class="vignette"></div>
+    <!-- Scanlines for texture -->
+    <div class="scanlines"></div>
 
-    <div class="game-container">
+            <!-- Film grain for cinematic texture -->
+    <div class="film-grain"></div>
+
+    <div class="game-container br-frame">
+        <div class="spotlight left"></div>
+        <div class="spotlight right"></div>
+
         <header>
             <h1>⚾ World Baseball Star ⚾</h1>
             <div class="subtitle">🏆 Ultimate Batting & Base Running Championship 🏆</div>
@@ -1005,16 +1259,22 @@
             <div class="score-item"><div class="score-label">Inning</div><div class="score-value inning" id="inning">1</div></div>
             <div class="score-item"><div class="score-label">Outs</div><div class="score-value outs" id="outs">0</div></div>
             <div class="score-item"><div class="score-label">Strikes</div><div class="score-value strikes" id="strikes">0</div></div>
-            <div class="score-item"><div class="score-label">Balls</div><div class="score-value" id="balls" style="color:#ffd166;">0</div></div>
+            <div class="score-item"><div class="score-label">Balls</div><div class="score-value balls" id="balls">0</div></div>
             <div class="score-item"><div class="score-label">Runs</div><div class="score-value runs" id="runs">0</div></div>
-            <div class="score-item"><div class="score-label">Batter</div><div class="team-indicator"><span class="team-flag" id="batterFlag">🇺🇸</span><span id="batterName" style="color:var(--neon-cyan);font-weight:bold;">-</span></div></div>
+            <div class="score-item"><div class="score-label">Batter</div><div class="team-indicator"><span class="team-flag" id="batterFlag">🇺🇸</span><span id="batterName" class="batter-name">-</span></div></div>
         </div>
 
         <div class="game-panel">
+            <div class="crt-tube"></div>
+            <div class="crt-overlay"></div>
+
             <div class="game-status status-waiting" id="gameStatus">⚾ World Baseball Star! Select your team below...</div>
 
             <div class="baseball-field" id="field">
+                <div class="field-crowd"></div>
+                <div class="field-texture"></div>
                 <div class="field-overlay"></div>
+                <div class="scan-sweep"></div>
                 <div class="field-lines"></div>
                 <div class="bases" id="basesContainer">
                     <div class="base base-home active" id="baseHome"><span class="base-label">HOME</span></div>
@@ -1067,7 +1327,7 @@
         // ===== DIGITAL RAIN INITIALIZATION =====
         (function() {
             var container = document.getElementById('rainContainer');
-            var numCols = 40;
+            var numCols = 25;
             for (var i = 0; i < numCols; i++) {
                 var col = document.createElement('div');
                 col.className = 'rain-col';
@@ -1118,7 +1378,7 @@
         function renderTeams() {
             const grid = document.getElementById('teamsGrid');
             grid.innerHTML = teams.map(function(team, i) {
-                return '<button class="team-btn" onclick="selectTeam(' + i + ')">' +
+                return '<button class="team-btn" onclick="selectTeam(' + i + ')" style="--team-color:' + team.color + '">' +
                     '<span class="team-flag">' + team.flag + '</span>' +
                     '<span class="team-name" style="color:' + team.color + '">' + team.name + '</span>' +
                     '<span class="team-city">' + team.city + '</span>' +
@@ -1134,12 +1394,50 @@
             gameState.batterIndex = 0;
             updateBatterDisplay();
             document.getElementById('batterBox').style.display = 'block';
+            setTeamAccent(team.color);
             statusRef.textContent = team.flag + ' ' + team.name + ' up at bat!';
             statusRef.className = 'game-status status-waiting';
             setTimeout(function() {
                 statusRef.textContent = 'Facing the pitcher... watch for the flash!';
                 setTimeout(startGame, 1500);
             }, 2000);
+        }
+
+        /* Dynamic team-color accent on panels */
+        function setTeamAccent(color) {
+            var sb = document.querySelector('.scoreboard');
+            var gp = document.querySelector('.game-panel');
+            if (sb) {
+                sb.style.borderColor = color;
+                sb.style.boxShadow =
+                    '0 10px 30px rgba(0,0,0,0.6),' +
+                    'inset 0 0 30px rgba(0,0,0,0.1),' +
+                    '0 0 25px ' + color + ',' +
+                    '0 0 0 4px rgba(192,192,192,0.25),' +
+                    'inset 0 2px 4px rgba(255,255,255,0.08),' +
+                    '0 0 30px ' + color;
+            }
+            if (gp) {
+                gp.style.borderColor = color;
+                gp.style.boxShadow =
+                    '0 14px 35px rgba(0,0,0,0.7),' +
+                    'inset 0 0 40px ' + color + ',' +
+                    '0 0 0 6px rgba(192,192,192,0.25),' +
+                    'inset 0 2px 6px rgba(255,255,255,0.12),' +
+                    '0 0 30px ' + color;
+            }
+        }
+        function resetTeamAccent() {
+            var sb = document.querySelector('.scoreboard');
+            var gp = document.querySelector('.game-panel');
+            if (sb) {
+                sb.style.borderColor = '';
+                sb.style.boxShadow = '';
+            }
+            if (gp) {
+                gp.style.borderColor = '';
+                gp.style.boxShadow = '';
+            }
         }
 
         function updateBatterDisplay() {
@@ -1327,8 +1625,7 @@
             statusRef.className = 'game-status status-run';
 
             var runner = document.createElement('div');
-            runner.className = 'runner';
-            runner.innerHTML = '<div class="helmet"></div><div class="body"></div>';
+            runner.className = 'runner helmet';
             runner.style.left = '400px';
             runner.style.top = '165px';
             field.appendChild(runner);
@@ -1477,6 +1774,35 @@
                 runToBase(1);
             }
         });
+
+        // ===== PARALLAX DEPTH EFFECT =====
+        (function() {
+            var field = document.getElementById('field');
+            var isMobile = /Android|iPhone|iPad|iPod|Touch|Windows Phone/i.test(navigator.userAgent);
+            if (isMobile || !field) return;
+
+            var fieldX = 0, fieldY = 0;
+            document.addEventListener('mousemove', function(e) {
+                var fieldRect = field.getBoundingClientRect();
+                var fieldCenterX = fieldRect.left + fieldRect.width / 2;
+                var fieldCenterY = fieldRect.top + fieldRect.height / 2;
+                var mouseX = e.clientX;
+                var mouseY = e.clientY;
+                fieldX = (mouseX - fieldCenterX) / 40;
+                fieldY = (mouseY - fieldCenterY) / 40;
+
+                // Parallax field lines and bases slightly
+                var lines = field.querySelector('.field-lines');
+                var bases = field.querySelector('.bases');
+                var mound = field.querySelector('.pitcher-mound-el');
+                var home = field.querySelector('.home-plate-el');
+
+                if (lines) lines.style.transform = 'translate(-50%, -50%) translate(' + (fieldX * 0.3) + 'px, ' + (fieldY * 0.3) + 'px)';
+                if (bases) bases.style.transform = 'translate(-50%, -50%) rotate(-45deg) translate(' + (fieldX * 0.2) + 'px, ' + (fieldY * 0.2) + 'px)';
+                if (mound) mound.style.transform = 'translate(' + (fieldX * 0.15) + 'px, ' + (fieldY * 0.15) + 'px)';
+                if (home) home.style.transform = 'translate(-50%, -50%) translate(' + (fieldX * 0.1) + 'px, ' + (fieldY * 0.1) + 'px)';
+            });
+        })();
 
         // Initialize
         renderTeams();
